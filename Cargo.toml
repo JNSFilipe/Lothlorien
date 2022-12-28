@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 rand = "*"
+rayon = "*"
 pyo3 = "0.12"
