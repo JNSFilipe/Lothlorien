@@ -3,6 +3,7 @@ mod algebra;
 mod heart_wood;
 mod galadh;
 mod taur;
+mod mallorn;
 
 use rand::Rng;
 
@@ -10,6 +11,7 @@ use crate::metrics::accuracy;
 use crate::algebra::argmax;
 use crate::galadh::Galadh;
 use crate::taur::Taur;
+use crate::mallorn::Mallorn;
 
 #[cfg(test)]
 mod tests {
@@ -82,7 +84,7 @@ mod tests {
 
     #[test]
     fn test_random_forests() {
-        let fixed_trheshold = 15.0;
+        let fixed_trheshold = 55.0;
         let mut rng = rand::thread_rng();
 
         let mut x = Vec::new();
@@ -98,6 +100,28 @@ mod tests {
         forest.sow(&x, &y, true);
 
         let y_hat = forest.predict(&x);
+
+        assert!(accuracy(&y.as_slice(), &y_hat.as_slice()) > 95.0);
+    }
+
+    #[test]
+    fn test_gradient_boosted_trees() {
+        let fixed_trheshold = 55.0;
+        let mut rng = rand::thread_rng();
+
+        let mut x = Vec::new();
+        let mut y = Vec::new();
+        for _ in 0..1000 {
+            let sample = vec![rng.gen_range(0.0..50.0), rng.gen_range(0.0..50.0)];
+            let label = if f64::powi(sample[0], 2) + f64::powi(sample[1], 3) < fixed_trheshold { 0 } else { 1 };
+            x.push(sample);
+            y.push(label);
+        }
+
+        let mut tree = Mallorn::new(100, 0.01);
+        tree.sow(&x, &y);
+
+        let y_hat = tree.predict(&x);
 
         assert!(accuracy(&y.as_slice(), &y_hat.as_slice()) > 95.0);
     }
