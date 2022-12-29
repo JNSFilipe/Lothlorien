@@ -25,8 +25,8 @@ impl Mallorn {
             }
 
             // Fit the tree on the residuals
-            let r = residuals.iter().map(|x| *x as usize).collect();
-            tree.sow(x, &r);
+            let r = residuals.iter().map(|x| if *x > 0.0 {1 as usize} else {0 as usize}).collect();
+            tree.sow(&x, &r);
         }
     }
 

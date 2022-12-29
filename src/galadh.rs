@@ -1,8 +1,8 @@
-use crate::heart_wood::{HeartWood, sow_tree};
+use crate::sapwood::{SapWood, sow_tree};
 
 #[derive(Debug)]
 pub struct Galadh {
-    root: Option<HeartWood>
+    root: Option<SapWood>
 }
 
 

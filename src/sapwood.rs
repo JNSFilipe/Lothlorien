@@ -2,17 +2,17 @@ use crate::algebra::dot_product_single;
 use crate::metrics::gini_impurity;
 
 #[derive(Debug)]
-pub struct HeartWood {
+pub struct SapWood {
     feature: Vec<f64>,
     threshold: f64,
-    left: Option<Box<HeartWood>>,
-    right: Option<Box<HeartWood>>,
+    left: Option<Box<SapWood>>,
+    right: Option<Box<SapWood>>,
     label: Option<usize>,
 }
 
-impl HeartWood {
-    fn new(feature: Vec<f64>, threshold: f64) -> HeartWood {
-        HeartWood {
+impl SapWood {
+    fn new(feature: Vec<f64>, threshold: f64) -> SapWood {
+        SapWood {
             feature,
             threshold,
             left: None,
@@ -21,11 +21,11 @@ impl HeartWood {
         }
     }
 
-    fn set_left(&mut self, left: HeartWood) {
+    fn set_left(&mut self, left: SapWood) {
         self.left = Some(Box::new(left));
     }
 
-    fn set_right(&mut self, right: HeartWood) {
+    fn set_right(&mut self, right: SapWood) {
         self.right = Some(Box::new(right));
     }
 
@@ -153,7 +153,7 @@ fn best_split(x: &Vec<Vec<f64>>, y: &Vec<usize>) -> Option<(Vec<f64>, f64)> {
     }
 }
 
-pub fn sow_tree(x: &Vec<Vec<f64>>, y: &Vec<usize>) -> Option<HeartWood> {
+pub fn sow_tree(x: &Vec<Vec<f64>>, y: &Vec<usize>) -> Option<SapWood> {
     let n_samples = x.len();
     let n_features = x[0].len();
     let mut classes = [0, 0];
@@ -164,17 +164,17 @@ pub fn sow_tree(x: &Vec<Vec<f64>>, y: &Vec<usize>) -> Option<HeartWood> {
     if classes[0] == n_samples {
         let mut aux = vec![0.0; n_features];
         aux[0] = 1.0;
-        let mut HeartWood = HeartWood::new(aux, 0.0);
-        HeartWood.set_label(0);
-        return Some(HeartWood);
+        let mut SapWood = SapWood::new(aux, 0.0);
+        SapWood.set_label(0);
+        return Some(SapWood);
     }
 
     if classes[1] == n_samples {
         let mut aux = vec![0.0; n_features];
         aux[0] = 1.0;
-        let mut HeartWood = HeartWood::new(aux, 0.0);
-        HeartWood.set_label(1);
-        return Some(HeartWood);
+        let mut SapWood = SapWood::new(aux, 0.0);
+        SapWood.set_label(1);
+        return Some(SapWood);
     }
 
     if let Some((weights, threshold)) = best_split(x, y) {
@@ -194,14 +194,14 @@ pub fn sow_tree(x: &Vec<Vec<f64>>, y: &Vec<usize>) -> Option<HeartWood> {
             }
         }
 
-        let mut HeartWood = HeartWood::new(weights, threshold);
+        let mut SapWood = SapWood::new(weights, threshold);
         if let Some(left) = sow_tree(&left_x, &left_y) {
-            HeartWood.set_left(left);
+            SapWood.set_left(left);
         }
         if let Some(right) = sow_tree(&right_x, &right_y) {
-            HeartWood.set_right(right);
+            SapWood.set_right(right);
         }
-        return Some(HeartWood);
+        return Some(SapWood);
     }
 
     None

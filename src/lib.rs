@@ -1,9 +1,10 @@
 mod metrics;
 mod algebra;
-mod heart_wood;
+mod sapwood;
 mod galadh;
 mod taur;
 mod mallorn;
+mod heartwood;
 
 use rand::Rng;
 
