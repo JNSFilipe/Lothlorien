@@ -17,3 +17,11 @@ pub fn accuracy(y: &[usize], y_hat: &[usize]) -> f64 {
 
     (aux.iter().sum::<i32>() as f64 / aux.len() as f64) * 100.0
 }
+
+pub fn mse(y: &Vec<f64>, y_hat: &Vec<f64>) -> f64 {
+    y.iter()
+        .zip(y_hat.iter())
+        .map(|(y, y_hat)| ((*y as f64) - *y_hat).powf(2.0))
+        .sum::<f64>()
+        / y.len() as f64
+}
