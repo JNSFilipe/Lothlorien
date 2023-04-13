@@ -19,16 +19,31 @@ FetchContent_MakeAvailable(googletest)
 
 set(USE_CUDNN 1)
 
+## ADD LibTorch
 if (WIN32)
-    set(TORCH_DIR "C:/libTorch/libtorch" CACHE PATH "Path to libtorch")
+  set(TORCH_URL https://download.pytorch.org/libtorch/cpu/libtorch-win-shared-with-deps-debug-2.0.0%2Bcpu.zip)
 else ()
-    set(TORCH_DIR "/nfs/libs/libtorch")# CACHE PATH "Path to libtorch")
+  set(TORCH_URL URL https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.0.0%2Bcpu.zip)
 endif ()
-message("TORCH_DIR=${TORCH_DIR}")
-list(APPEND CMAKE_PREFIX_PATH TORCH_DIR) 
-list(APPEND CMAKE_PROGRAM_PATH "${TORCH_DIR}/lib")
 
-message("CMAKE_PROGRAM_PATH=${CMAKE_PROGRAM_PATH}")
+FetchContent_Declare(
+        Torch
+        URL ${TORCH_URL}
+        # OVERRIDE_FIND_PACKAGE
+)
+FetchContent_MakeAvailable(Torch)
+
+message("Torch_FOUND=${Torch_FOUND}")
+message("torch_POPULATED=${torch_POPULATED}")
+message("torch_BINARY_DIR=${torch_BINARY_DIR}")
+message("torch_SOURCE_DIR=${torch_SOURCE_DIR}")
+message("Torch_DIR=${Torch_DIR}")
+message("CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}")
+message("CMAKE_CURRENT_LIST_DIR=${CMAKE_CURRENT_LIST_DIR}")
+message("TORCH_LIBRARIES=${TORCH_LIBRARIES}")
+message("TORCH_INSTALL_PREFIX=${TORCH_INSTALL_PREFIX}")
+
+list(APPEND CMAKE_PREFIX_PATH "${torch_SOURCE_DIR}")
 
 # Find the PyTorch package
 find_package(Torch REQUIRED)
