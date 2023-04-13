@@ -25,7 +25,7 @@ else ()
     set(TORCH_DIR "/nfs/libs/libtorch")# CACHE PATH "Path to libtorch")
 endif ()
 message("TORCH_DIR=${TORCH_DIR}")
-list(APPEND CMAKE_PREFIX_PATH TORCH_DIR) 
+list(APPEND CMAKE_PREFIX_PATH ${TORCH_DIR})
 list(APPEND CMAKE_PROGRAM_PATH "${TORCH_DIR}/lib")
 
 message("CMAKE_PROGRAM_PATH=${CMAKE_PROGRAM_PATH}")
