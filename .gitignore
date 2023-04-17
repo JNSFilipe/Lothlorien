@@ -2,6 +2,9 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=c++,cmake,windows,linux,visualstudio,visualstudiocode,vim,emacs
 
 ### C++ ###
+# Build folder
+build
+
 # Prerequisites
 *.d
 
