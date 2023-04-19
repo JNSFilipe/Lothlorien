@@ -7,6 +7,8 @@
 #include <iostream>
 #include <torch/torch.h>
 
+#include "utils.h"
+
 class HeartWood {
 public:
     HeartWood(int input_size):
@@ -82,27 +84,6 @@ public:
         }
     }
 
-    
-
-    //void train(const std::vector<torch::Tensor>& inputs, const std::vector<torch::Tensor>& targets, int num_epochs, float learning_rate) {
-    //    torch::optim::SGD optimizer({ w, k }, torch::optim::SGDOptions(learning_rate));
-
-    //    for (int epoch = 0; epoch < num_epochs; ++epoch) {
-    //        for (size_t i = 0; i < inputs.size(); ++i) {
-    //            // Reset gradients
-    //            optimizer.zero_grad();
-
-    //            // Compute output and loss
-    //            torch::Tensor output = forward(inputs[i]);
-    //            torch::Tensor loss = torch::mse_loss(output, targets[i]);
-
-    //            // Backpropagate and update weights
-    //            loss.backward();
-    //            optimizer.step();
-    //        }
-    //    }
-    //}
-
     void train_impurity(const torch::Tensor& inputs, const torch::Tensor& targets) {
 
         // Initialize the minimum Gini impurity and best w and k values
@@ -158,6 +139,15 @@ public:
                     }
                 }
             }
+        }
+
+        torch::Tensor preds     = torch::heaviside(best_k - (best_w * inputs).sum(-1), torch::tensor(0.0));
+        torch::Tensor inv_preds = torch::heaviside((-best_k) - ((-best_w) * inputs).sum(-1), torch::tensor(0.0));
+        
+        // Flip lables
+        if (utils::accuracy(inv_preds, targets) > utils::accuracy(preds, targets)){
+            best_w = -best_w;
+            best_k = -best_k;
         }
 
         // Set the best w and k values
