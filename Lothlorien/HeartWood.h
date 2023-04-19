@@ -21,7 +21,7 @@ public:
         return result;
     }
 
-    void train_adam(const torch::Tensor& inputs, const torch::Tensor& targets, int num_epochs, float learning_rate, int batch_size, int patience, float lr_annealing_factor) {
+    void train_adam(const torch::Tensor& inputs, const torch::Tensor& targets, int num_epochs, float learning_rate, int batch_size, int patience, float lr_annealing_factor, int verbose = 0) {
         // torch::optim::SGD optimizer({ w, k }, learning_rate);
         torch::optim::Adam optimizer({ w, k }, learning_rate);
         float best_loss = std::numeric_limits<float>::max();
@@ -56,7 +56,8 @@ public:
             }
 
             epoch_loss /= input_batches.size();
-            std::cout << "Epoch: " << epoch + 1 << ", Loss: " << epoch_loss << std::endl;
+            if(verbose == 1)
+                std::cout << "Epoch: " << epoch + 1 << ", Loss: " << epoch_loss << std::endl;
 
             // Early stopping
             if (epoch_loss < best_loss) {
@@ -72,11 +73,13 @@ public:
                     for (auto& param_group : optimizer.param_groups()) {
                         param_group.options().set_lr(learning_rate);
                     }
-                    std::cout << "New learning rate: " << learning_rate << std::endl;
+                    if(verbose == 1)
+                        std::cout << "New learning rate: " << learning_rate << std::endl;
 
                     // Check if learning rate has been reduced patience times
                     if (no_improvement_counter >= 2 * patience) {
-                        std::cout << "Early stopping..." << std::endl;
+                        if(verbose == 1)
+                            std::cout << "Early stopping..." << std::endl;
                         break;
                     }
                 }
