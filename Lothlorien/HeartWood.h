@@ -85,6 +85,7 @@ public:
                 }
             }
         }
+        this->adam = true;
     }
 
     void train_impurity(const torch::Tensor& inputs, const torch::Tensor& targets) {
@@ -142,6 +143,7 @@ public:
                     }
                 }
             }
+            this->adam = false;
         }
 
         torch::Tensor preds     = torch::heaviside(best_k - (best_w * inputs).sum(-1), torch::tensor(0.0));
@@ -161,7 +163,7 @@ public:
     void train(const torch::Tensor& inputs, const torch::Tensor& targets, int num_epochs, float learning_rate, int batch_size, int stop_patience, float lr_annealing_factor) {
 
         // Train using SGD
-        train_adam(inputs, targets, num_epochs, learning_rate, batch_size, stop_patience, lr_annealing_factor);
+        this->train_adam(inputs, targets, num_epochs, learning_rate, batch_size, stop_patience, lr_annealing_factor);
 
         // Calculate the gini impurity for SGD
         auto left_right_counts = count_left_right_positive(inputs, targets);
@@ -172,7 +174,7 @@ public:
         torch::Tensor k_sgd = k.clone();
 
         // Find best split without SGD
-        train_impurity(inputs, targets);
+        this->train_impurity(inputs, targets);
 
         // Calculate the gini impurity for No SGD
         left_right_counts = count_left_right_positive(inputs, targets);
@@ -180,8 +182,9 @@ public:
 
         // Choose the values of w and k that minimize the gini impurity
         if ( gini_sgd < gini_no_sgd ) {
-            w = w_sgd.clone();
-            k = k_sgd.clone();
+            this->w = w_sgd.clone();
+            this->k = k_sgd.clone();
+            this->adam = true;
         }
     }
 
@@ -200,9 +203,14 @@ public:
         return this->w.clone().detach();
     }
 
+    bool is_adam() {
+        return this->adam;
+    }
+
 private:
     torch::Tensor w;
     torch::Tensor k;
+    bool adam = false
 
     float gini_impurity(int count_left, int count_left_positive, int count_right, int count_right_positive, int num_samples) {
         float prob_left_positive = static_cast<float>(count_left_positive) / count_left;
