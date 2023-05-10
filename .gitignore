@@ -231,6 +231,7 @@ CMakeSettings.json
 Generated\ Files/
 
 # CLion Stuff
+.fleet/
 .idea/
 cmake-build-*/
 

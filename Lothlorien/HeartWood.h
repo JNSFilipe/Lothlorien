@@ -210,7 +210,7 @@ public:
 private:
     torch::Tensor w;
     torch::Tensor k;
-    bool adam = false
+    bool adam = false;
 
     float gini_impurity(int count_left, int count_left_positive, int count_right, int count_right_positive, int num_samples) {
         float prob_left_positive = static_cast<float>(count_left_positive) / count_left;
