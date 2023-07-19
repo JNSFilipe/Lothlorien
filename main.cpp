@@ -4,12 +4,14 @@
 #include <gtest/gtest.h>
 
 #include "Lothlorien/HeartWood.h"
+#include "Lothlorien/Mallorn.h"
 
-#define EPOCHS    10
-#define LR        0.1
-#define BATCH     128
-#define PATIENCE  5
-#define ANNEALING 0.5
+#define EPOCHS     10
+#define LR         0.1
+#define BATCH      128
+#define PATIENCE   5
+#define ANNEALING  0.5
+#define MINSAMPLES 10
 
 using namespace std;
 
@@ -275,6 +277,35 @@ TEST(HeartWood, full_train_test) {
     for (int i = 0; i < v_ref_w.size(); i++)
         EXPECT_NEAR(v_ref_w[i], v_w[i], 0.1);
 }
+
+
+TEST(Mallorn, simple_binary_classification) {
+
+    const int depth = 3;
+
+    torch::Tensor ref_k = torch::tensor(4.0);
+    torch::Tensor ref_w = torch::tensor({ 3.0, 6.0, 0.0 });
+    const unsigned int n_samples = 1e4;
+
+    vector<torch::Tensor> inputs_vec, targets_vec;
+
+    for (int i = 0; i < n_samples; i++)
+        inputs_vec.push_back(torch::rand(3));
+
+    for (int i = 0; i < n_samples; i++)
+        targets_vec.push_back(torch::heaviside(ref_k - torch::dot(ref_w, inputs_vec[i]), torch::tensor(0.0)));
+
+    torch::Tensor inputs = torch::stack(inputs_vec);
+    torch::Tensor targets = torch::stack(targets_vec);
+
+    Mallorn tree(3);
+    tree.train(inputs, targets, EPOCHS, LR, BATCH, PATIENCE, ANNEALING, MINSAMPLES, depth);
+
+    torch::Tensor preds = tree(inputs);
+    float acc = utils::accuracy(preds, targets);
+    ASSERT_TRUE(acc >= 0.8);
+}
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
