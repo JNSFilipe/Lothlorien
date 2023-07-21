@@ -306,6 +306,40 @@ TEST(Mallorn, simple_binary_classification) {
     ASSERT_TRUE(acc >= 0.8);
 }
 
+TEST(Mallorn, simple_sgd_vs_no_sgd) {
+
+    torch::Tensor ref_k = torch::tensor(4.0);
+    torch::Tensor ref_w = torch::tensor({ 3.0, 6.0, 0.0 });
+    const unsigned int n_samples = 1e4;
+
+    vector<torch::Tensor> inputs_vec, targets_vec;
+
+    for (int i = 0; i < n_samples; i++)
+        inputs_vec.push_back(torch::rand(3));
+
+    for (int i = 0; i < n_samples; i++)
+        targets_vec.push_back(torch::heaviside(ref_k - torch::dot(ref_w, inputs_vec[i]), torch::tensor(0.0)));
+
+    torch::Tensor inputs = torch::stack(inputs_vec);
+    torch::Tensor targets = torch::stack(targets_vec);
+
+    Mallorn tree_sgd(3, false);
+    tree_sgd.train(inputs, targets, EPOCHS, LR, BATCH, PATIENCE, ANNEALING, MINSAMPLES, 2);
+
+    Mallorn tree_no_sgd(3, true);
+    tree_no_sgd.train(inputs, targets, EPOCHS, LR, BATCH, PATIENCE, ANNEALING, MINSAMPLES, 2);
+
+    torch::Tensor preds_sgd = tree_sgd(inputs);
+    torch::Tensor preds_no_sgd = tree_no_sgd(inputs);
+    float acc_sgd    = utils::accuracy(preds_sgd, targets);
+    float acc_no_sgd = utils::accuracy(preds_no_sgd, targets);
+
+    cout << "Acc. SGD\t: \t" << acc_sgd*100 << "%" << endl;
+    cout << "Acc. No SGD\t: \t" << acc_no_sgd*100 << "%" << endl;
+
+    ASSERT_TRUE(acc_sgd > acc_no_sgd);
+}
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

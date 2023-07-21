@@ -11,9 +11,10 @@
 
 class HeartWood {
 public:
-    HeartWood(int input_size):
+    HeartWood(int input_size, bool disable_sgd=false):
         w(torch::randn({ input_size }, torch::requires_grad(true))),
-        k(torch::randn(1, torch::requires_grad(true)))
+        k(torch::randn(1, torch::requires_grad(true))),
+        disable_sgd(disable_sgd)
     {}
 
     torch::Tensor forward(const torch::Tensor& x) {
@@ -162,29 +163,37 @@ public:
 
     void train(const torch::Tensor& inputs, const torch::Tensor& targets, int num_epochs, float learning_rate, int batch_size, int stop_patience, float lr_annealing_factor) {
 
-        // Train using SGD
-        this->train_adam(inputs, targets, num_epochs, learning_rate, batch_size, stop_patience, lr_annealing_factor);
+        if (!this->disable_sgd) {
+            // Train using SGD
+            this->train_adam(inputs, targets, num_epochs, learning_rate, batch_size, stop_patience,
+                             lr_annealing_factor);
 
-        // Calculate the gini impurity for SGD
-        auto left_right_counts = count_left_right_positive(inputs, targets);
-        float gini_sgd = gini_impurity(left_right_counts[0], left_right_counts[1], left_right_counts[2], left_right_counts[3], inputs.size(0));
+            // Calculate the gini impurity for SGD
+            auto left_right_counts = count_left_right_positive(inputs, targets);
+            float gini_sgd = gini_impurity(left_right_counts[0], left_right_counts[1], left_right_counts[2],
+                                           left_right_counts[3], inputs.size(0));
 
-        // Save the resulting w and k
-        torch::Tensor w_sgd = w.clone();
-        torch::Tensor k_sgd = k.clone();
+            // Save the resulting w and k
+            torch::Tensor w_sgd = w.clone();
+            torch::Tensor k_sgd = k.clone();
 
-        // Find best split without SGD
-        this->train_impurity(inputs, targets);
+            // Find best split without SGD
+            this->train_impurity(inputs, targets);
 
-        // Calculate the gini impurity for No SGD
-        left_right_counts = count_left_right_positive(inputs, targets);
-        float gini_no_sgd = gini_impurity(left_right_counts[0], left_right_counts[1], left_right_counts[2], left_right_counts[3], inputs.size(0));
+            // Calculate the gini impurity for No SGD
+            left_right_counts = count_left_right_positive(inputs, targets);
+            float gini_no_sgd = gini_impurity(left_right_counts[0], left_right_counts[1], left_right_counts[2],
+                                              left_right_counts[3], inputs.size(0));
 
-        // Choose the values of w and k that minimize the gini impurity
-        if ( gini_sgd < gini_no_sgd ) {
-            this->w = w_sgd.clone();
-            this->k = k_sgd.clone();
-            this->adam = true;
+            // Choose the values of w and k that minimize the gini impurity
+            if (gini_sgd < gini_no_sgd) {
+                this->w = w_sgd.clone();
+                this->k = k_sgd.clone();
+                this->adam = true;
+            }
+        } else {
+            this->train_impurity(inputs, targets);
+            this->adam = false;
         }
     }
 
@@ -211,6 +220,7 @@ private:
     torch::Tensor w;
     torch::Tensor k;
     bool adam = false;
+    bool disable_sgd = false;
 
     float gini_impurity(int count_left, int count_left_positive, int count_right, int count_right_positive, int num_samples) {
         float prob_left_positive = static_cast<float>(count_left_positive) / count_left;
