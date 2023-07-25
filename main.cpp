@@ -3,9 +3,12 @@
 
 #include <gtest/gtest.h>
 
+#include "Lothlorien/DataHandler.h"
 #include "Lothlorien/HeartWood.h"
 #include "Lothlorien/Mallorn.h"
 
+#define NSAMPLES   1e4
+#define NDIMS      3
 #define EPOCHS     10
 #define LR         0.1
 #define BATCH      128
@@ -18,20 +21,11 @@ using namespace std;
 TEST(HeartWood, adam_test_positive) {
     torch::Tensor ref_k = 1.0 * torch::tensor(4.5);
     torch::Tensor ref_w = 1.0 * torch::tensor({3.0, 6.0, 0.0});
-    const unsigned int n_samples = 1e4;
 
-    vector<torch::Tensor> inputs_vec, targets_vec;
-
-    for (int i = 0; i < n_samples; i++)
-        inputs_vec.push_back(torch::rand(3));
-
-    for (int i = 0; i < n_samples; i++)
-        targets_vec.push_back(torch::heaviside(ref_k - torch::dot(ref_w, inputs_vec[i]), torch::tensor(0.0)));
-
-    torch::Tensor inputs = torch::stack(inputs_vec);
-    torch::Tensor targets = torch::stack(targets_vec);
-
-    cout << "Percentage of 1's:\t" << (targets.sum(-1) / targets.size(0)) * 100 << endl << endl;
+    auto condition = [=](const torch::Tensor x) -> torch::Tensor { return torch::heaviside(ref_k - torch::dot(ref_w, x), torch::tensor(0.0));};
+    torch::Tensor inputs, targets;
+    DataHandler dh;
+    std::tie(inputs, targets) = dh.synthetize_data(NSAMPLES, NDIMS,  condition);
 
     HeartWood heart_wood(3);
     heart_wood.train_adam(inputs, targets, EPOCHS, LR, BATCH, PATIENCE, ANNEALING);
@@ -72,20 +66,11 @@ TEST(HeartWood, adam_test_positive) {
 TEST(HeartWood, adam_test_negative) {
     torch::Tensor ref_k = -1.0 * torch::tensor(4.5);
     torch::Tensor ref_w = -1.0 * torch::tensor({ 3.0, 6.0, 0.0 });
-    const unsigned int n_samples = 1e4;
 
-    vector<torch::Tensor> inputs_vec, targets_vec;
-
-    for (int i = 0; i < n_samples; i++)
-        inputs_vec.push_back(torch::rand(3));
-
-    for (int i = 0; i < n_samples; i++)
-        targets_vec.push_back(torch::heaviside(ref_k - torch::dot(ref_w, inputs_vec[i]), torch::tensor(0.0)));
-
-    torch::Tensor inputs = torch::stack(inputs_vec);
-    torch::Tensor targets = torch::stack(targets_vec);
-
-    cout << "Percentage of 1's:\t" << (targets.sum(-1) / targets.size(0)) * 100 << endl << endl;
+    auto condition = [=](const torch::Tensor x) -> torch::Tensor { return torch::heaviside(ref_k - torch::dot(ref_w, x), torch::tensor(0.0));};
+    torch::Tensor inputs, targets;
+    DataHandler dh;
+    std::tie(inputs, targets) = dh.synthetize_data(NSAMPLES, NDIMS,  condition);
 
     HeartWood heart_wood(3);
     heart_wood.train_adam(inputs, targets, EPOCHS, LR, BATCH, PATIENCE, ANNEALING);
@@ -126,18 +111,11 @@ TEST(HeartWood, adam_test_negative) {
 TEST(HeartWood, impurity_test_positive) {
     torch::Tensor ref_k = 1.0 * torch::tensor(0.18);
     torch::Tensor ref_w = 1.0 * torch::tensor({ 0.0, 0.0, 1.0 });
-    const unsigned int n_samples = 1e4;
 
-    vector<torch::Tensor> inputs_vec, targets_vec;
-
-    for (int i = 0; i < n_samples; i++)
-        inputs_vec.push_back(torch::rand(3));
-
-    for (int i = 0; i < n_samples; i++)
-        targets_vec.push_back(torch::heaviside(ref_k - torch::dot(ref_w, inputs_vec[i]), torch::tensor(0.0)));
-
-    torch::Tensor inputs = torch::stack(inputs_vec);
-    torch::Tensor targets = torch::stack(targets_vec);
+    auto condition = [=](const torch::Tensor x) -> torch::Tensor { return torch::heaviside(ref_k - torch::dot(ref_w, x), torch::tensor(0.0));};
+    torch::Tensor inputs, targets;
+    DataHandler dh;
+    std::tie(inputs, targets) = dh.synthetize_data(NSAMPLES, NDIMS,  condition);
 
     HeartWood heart_wood(3);
     heart_wood.train_impurity(inputs, targets);
@@ -178,18 +156,11 @@ TEST(HeartWood, impurity_test_positive) {
 TEST(HeartWood, impurity_test_negative) {
     torch::Tensor ref_k = -1.0 * torch::tensor(0.18);
     torch::Tensor ref_w = -1.0 * torch::tensor({ 0.0, 0.0, 1.0 });
-    const unsigned int n_samples = 1e4;
 
-    vector<torch::Tensor> inputs_vec, targets_vec;
-
-    for (int i = 0; i < n_samples; i++)
-        inputs_vec.push_back(torch::rand(3));
-
-    for (int i = 0; i < n_samples; i++)
-        targets_vec.push_back(torch::heaviside(ref_k - torch::dot(ref_w, inputs_vec[i]), torch::tensor(0.0)));
-
-    torch::Tensor inputs = torch::stack(inputs_vec);
-    torch::Tensor targets = torch::stack(targets_vec);
+    auto condition = [=](const torch::Tensor x) -> torch::Tensor { return torch::heaviside(ref_k - torch::dot(ref_w, x), torch::tensor(0.0));};
+    torch::Tensor inputs, targets;
+    DataHandler dh;
+    std::tie(inputs, targets) = dh.synthetize_data(NSAMPLES, NDIMS,  condition);
 
     HeartWood heart_wood(3);
     heart_wood.train_impurity(inputs, targets);
@@ -230,18 +201,11 @@ TEST(HeartWood, impurity_test_negative) {
 TEST(HeartWood, full_train_test) {
     torch::Tensor ref_k = torch::tensor(4.0);
     torch::Tensor ref_w = torch::tensor({ 3.0, 6.0, 0.0 });
-    const unsigned int n_samples = 1e4;
 
-    vector<torch::Tensor> inputs_vec, targets_vec;
-
-    for (int i = 0; i < n_samples; i++)
-        inputs_vec.push_back(torch::rand(3));
-
-    for (int i = 0; i < n_samples; i++)
-        targets_vec.push_back(torch::heaviside(ref_k - torch::dot(ref_w, inputs_vec[i]), torch::tensor(0.0)));
-
-    torch::Tensor inputs = torch::stack(inputs_vec);
-    torch::Tensor targets = torch::stack(targets_vec);
+    auto condition = [=](const torch::Tensor x) -> torch::Tensor { return torch::heaviside(ref_k - torch::dot(ref_w, x), torch::tensor(0.0));};
+    torch::Tensor inputs, targets;
+    DataHandler dh;
+    std::tie(inputs, targets) = dh.synthetize_data(NSAMPLES, NDIMS,  condition);
 
     HeartWood heart_wood(3);
     heart_wood.train(inputs, targets, EPOCHS, LR, BATCH, PATIENCE, ANNEALING);
@@ -285,18 +249,11 @@ TEST(Mallorn, simple_binary_classification) {
 
     torch::Tensor ref_k = torch::tensor(4.0);
     torch::Tensor ref_w = torch::tensor({ 3.0, 6.0, 0.0 });
-    const unsigned int n_samples = 1e4;
 
-    vector<torch::Tensor> inputs_vec, targets_vec;
-
-    for (int i = 0; i < n_samples; i++)
-        inputs_vec.push_back(torch::rand(3));
-
-    for (int i = 0; i < n_samples; i++)
-        targets_vec.push_back(torch::heaviside(ref_k - torch::dot(ref_w, inputs_vec[i]), torch::tensor(0.0)));
-
-    torch::Tensor inputs = torch::stack(inputs_vec);
-    torch::Tensor targets = torch::stack(targets_vec);
+    auto condition = [=](const torch::Tensor x) -> torch::Tensor { return torch::heaviside(ref_k - torch::dot(ref_w, x), torch::tensor(0.0));};
+    torch::Tensor inputs, targets;
+    DataHandler dh;
+    std::tie(inputs, targets) = dh.synthetize_data(NSAMPLES, NDIMS,  condition);
 
     Mallorn tree(3);
     tree.train(inputs, targets, EPOCHS, LR, BATCH, PATIENCE, ANNEALING, MINSAMPLES, depth);
@@ -310,18 +267,11 @@ TEST(Mallorn, simple_sgd_vs_no_sgd) {
 
     torch::Tensor ref_k = torch::tensor(4.0);
     torch::Tensor ref_w = torch::tensor({ 3.0, 6.0, 0.0 });
-    const unsigned int n_samples = 1e4;
 
-    vector<torch::Tensor> inputs_vec, targets_vec;
-
-    for (int i = 0; i < n_samples; i++)
-        inputs_vec.push_back(torch::rand(3));
-
-    for (int i = 0; i < n_samples; i++)
-        targets_vec.push_back(torch::heaviside(ref_k - torch::dot(ref_w, inputs_vec[i]), torch::tensor(0.0)));
-
-    torch::Tensor inputs = torch::stack(inputs_vec);
-    torch::Tensor targets = torch::stack(targets_vec);
+    auto condition = [=](const torch::Tensor x) -> torch::Tensor { return torch::heaviside(ref_k - torch::dot(ref_w, x), torch::tensor(0.0));};
+    torch::Tensor inputs, targets;
+    DataHandler dh;
+    std::tie(inputs, targets) = dh.synthetize_data(NSAMPLES, NDIMS,  condition);
 
     Mallorn tree_sgd(3, false);
     tree_sgd.train(inputs, targets, EPOCHS, LR, BATCH, PATIENCE, ANNEALING, MINSAMPLES, 2);

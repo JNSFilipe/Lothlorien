@@ -7,7 +7,7 @@
 class Mallorn {
 public:
     Mallorn(int input_size, bool disable_sgd=false):
-        root(input_size),
+        root(input_size, disable_sgd),
         disable_sgd(disable_sgd)
     {}
 
