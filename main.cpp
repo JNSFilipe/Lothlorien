@@ -290,6 +290,14 @@ TEST(Mallorn, simple_sgd_vs_no_sgd) {
     ASSERT_TRUE(acc_sgd > acc_no_sgd);
 }
 
+TEST(utils, read_csv) {
+    torch::Tensor inputs, targets;
+    DataHandler dh;
+    std::tie(inputs, targets) = dh.read_data_from_csv("./Assets/data_banknote_authentication.txt");
+
+    SUCCEED();
+}
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
