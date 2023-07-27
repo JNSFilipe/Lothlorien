@@ -290,12 +290,22 @@ TEST(Mallorn, simple_sgd_vs_no_sgd) {
     ASSERT_TRUE(acc_sgd > acc_no_sgd);
 }
 
-TEST(utils, read_csv) {
+TEST(DataHandler, read_csv_high_depth) {
     torch::Tensor inputs, targets;
     DataHandler dh;
-    std::tie(inputs, targets) = dh.read_data_from_csv("./Assets/data_banknote_authentication.txt");
+    std::tie(inputs, targets) = dh.read_data_from_csv("../../Assets/data_banknote_authentication.txt");
 
     SUCCEED();
+
+    Mallorn tree((int) inputs.size(1) , false);
+    tree.train(inputs, targets, EPOCHS, LR, BATCH, PATIENCE, ANNEALING, MINSAMPLES, 100);
+
+    torch::Tensor preds = tree(inputs);
+    float acc = utils::accuracy(preds, targets);
+
+    cout << "Acc. SGD\t: \t" << acc*100 << "%" << endl;
+
+    ASSERT_TRUE(0.9 < acc);
 }
 
 
