@@ -1,10 +1,11 @@
 class SapWood {
 public:
-    SapWood(int input_size, bool disable_sgd=false) :
-        hw(input_size, disable_sgd),
+    SapWood(int input_size, bool disable_sgd=false, int seed=42) :
+        hw(input_size, disable_sgd, seed),
         input_dim(input_size),
         disable_sgd(disable_sgd),
-        is_leaf(false)
+        is_leaf(false),
+        seed(seed)
     {}
 
     void train(const torch::Tensor& inputs, const torch::Tensor& targets, int num_epochs, float learning_rate, int batch_size, int stop_patience, float lr_annealing_factor, int min_samples, int max_depth) {
@@ -67,6 +68,7 @@ private:
     HeartWood hw;
     std::unique_ptr<SapWood> rights = nullptr;
     std::unique_ptr<SapWood> wrongs = nullptr;
+    int seed;
     bool is_leaf;
     int input_dim;
     bool disable_sgd;

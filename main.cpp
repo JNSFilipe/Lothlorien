@@ -243,7 +243,7 @@ TEST(HeartWood, full_train_test) {
 }
 
 
-TEST(Mallorn, simple_binary_classification) {
+TEST(Mallorn, simple_binary_classification_and_reproducibility) {
 
     const int depth = 3;
 
@@ -255,12 +255,27 @@ TEST(Mallorn, simple_binary_classification) {
     DataHandler dh;
     std::tie(inputs, targets) = dh.synthetize_data(NSAMPLES, NDIMS,  condition);
 
-    Mallorn tree(3);
-    tree.train(inputs, targets, EPOCHS, LR, BATCH, PATIENCE, ANNEALING, MINSAMPLES, depth);
+    Mallorn tree1(3, false, 42);
+    tree1.train(inputs, targets, EPOCHS, LR, BATCH, PATIENCE, ANNEALING, MINSAMPLES, depth);
 
-    torch::Tensor preds = tree(inputs);
-    float acc = utils::accuracy(preds, targets);
-    ASSERT_TRUE(acc >= 0.8);
+    Mallorn tree2(3, false, 18);
+    tree2.train(inputs, targets, EPOCHS, LR, BATCH, PATIENCE, ANNEALING, MINSAMPLES, depth);
+
+    Mallorn tree3(3, false, 18);
+    tree3.train(inputs, targets, EPOCHS, LR, BATCH, PATIENCE, ANNEALING, MINSAMPLES, depth);
+
+    torch::Tensor preds1 = tree1(inputs);
+    torch::Tensor preds2 = tree2(inputs);
+    torch::Tensor preds3 = tree3(inputs);
+    float acc1 = utils::accuracy(preds1, targets);
+    float acc2 = utils::accuracy(preds2, targets);
+    float acc3 = utils::accuracy(preds3, targets);
+    cout << acc1 << endl;
+    cout << acc2 << endl;
+    cout << acc3 << endl;
+    ASSERT_TRUE(acc1 >= 0.8);
+    ASSERT_TRUE(acc2 == acc3);
+    ASSERT_TRUE(acc1 != acc2);
 }
 
 TEST(Mallorn, simple_sgd_vs_no_sgd) {

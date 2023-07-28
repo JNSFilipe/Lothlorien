@@ -6,9 +6,10 @@
 
 class Mallorn {
 public:
-    Mallorn(int input_size, bool disable_sgd=false):
-        root(input_size, disable_sgd),
-        disable_sgd(disable_sgd)
+    Mallorn(int input_size, bool disable_sgd=false, int seed=42):
+        root(input_size, disable_sgd, seed),
+        disable_sgd(disable_sgd),
+        seed(seed)
     {}
 
     void train(const torch::Tensor& inputs, const torch::Tensor& targets, int num_epochs, float learning_rate, int batch_size, int stop_patience, float lr_annealing_factor, int min_samples, int max_depth) {
@@ -25,6 +26,7 @@ public:
 
 private:
     SapWood root;
+    int seed;
     bool disable_sgd;
 };
 

@@ -11,11 +11,16 @@
 
 class HeartWood {
 public:
-    HeartWood(int input_size, bool disable_sgd=false):
+    HeartWood(int input_size, bool disable_sgd=false, int seed=-1):
         w(torch::randn({ input_size }, torch::requires_grad(true))),
         k(torch::randn(1, torch::requires_grad(true))),
-        disable_sgd(disable_sgd)
-    {}
+        disable_sgd(disable_sgd),
+        seed(seed)
+    {
+        if(seed >= 0){
+            this->set_seed(seed);
+        }
+    }
 
     torch::Tensor forward(const torch::Tensor& x) {
         torch::Tensor result = 0.5 + 0.5 * torch::tanh(     (k - (w * x).sum(-1))     );
@@ -219,6 +224,7 @@ public:
 private:
     torch::Tensor w;
     torch::Tensor k;
+    int seed;
     bool adam = false;
     bool disable_sgd = false;
 
@@ -244,6 +250,13 @@ private:
         int count_right = right_mask.sum().item<int>();
 
         return { count_left, count_left_positive, count_right, count_right_positive };
+    }
+
+    void set_seed(int seed) {
+        torch::manual_seed(seed);
+        if (torch::cuda::is_available()) {
+            torch::cuda::manual_seed(seed);
+        }
     }
 
 };
