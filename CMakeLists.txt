@@ -53,7 +53,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 include_directories(Lothlorien)
 
 # Add the main executable
-add_executable(LothlorienTests "main.cpp" Lothlorien/SapWood.h Lothlorien/Mallorn.h Lothlorien/DataHandler.h)
+file(GLOB H_FILES "Lothlorien/*.h")
+message("H_FILES=${H_FILES}")
+add_executable(LothlorienTests "main.cpp" "${H_FILES}")
 
 # Link the PyTorch libraries
 target_link_libraries(LothlorienTests "${TORCH_LIBRARIES}")
