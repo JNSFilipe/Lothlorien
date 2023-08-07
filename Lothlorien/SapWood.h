@@ -1,3 +1,9 @@
+// SapWood.h : Include file for the SapWood class
+
+#pragma once
+
+#include "HeartWood.h"
+
 class SapWood {
 public:
     SapWood(int input_size, bool disable_sgd=false, int seed=42) :
